@@ -77,19 +77,6 @@ class SaleOrder(orm.Model):
     '''    
     _inherit = 'sale.order'
   
-    def dummy_button(self, cr, uid, ids, context=None):
-        ''' For show an icon as a button
-        '''
-        return True
-        
-    def reset_xmlrpc_export_order(self, cr, uid, ids, context=None):
-        ''' Remove sync status
-        '''
-        assert len(ids) == 1, 'No multi export for now' # TODO remove!!!
-        _logger.warning('Reset sync order: %s' % ids[0])
-        return self.write(cr, uid, ids, {
-            'xmlrpc_sync': False}, context=context)
-
     def xmlrpc_export_order(self, cr, uid, ids, context=None):
         ''' Export current order 
             # TODO manage list of order?
@@ -107,10 +94,34 @@ class SaleOrder(orm.Model):
         parameter = {}
         
         # Generate string for export file:
+        ''' 
+        NUMERO                    6
+        CAUSALE                    2
+        DATA                          8
+        COD.CLIENTE            9
+        SCADENZA                8
+        COD.AGENTE            9
+        NOTE                        16
+        
+        corpo righe        
+        CODICE ARTICOLO   8
+        DESCR.ARTICOLO    60
+        UM                              2
+        QUANTITA'              5+3 dec
+        PREZZO                    5+5 dec
+        SCONTO                   20
+        IVA o ESENZIONI       5
+        
+        piede del documento
+        TOT COLLI                  5
+        PESO TOT KG            15
+        PORTO                        3
+        TRASP.MEZZO           1 (V vettore M mittente D dest)
+        '''
         mask = '%s%s%s%s' % ( #3 block for readability:
-            '%-2s%-2s%-6s%-8s%-2s%-8s%-8s', #header
-            '%-1s%-16s%-60s%-2s%10.2f%10.3f%-5s%-5s%-50s%-10s%-8s%1s', #row
-            '%-3s', #foot
+            '%-6s%-2s%-8s%-9s%-8s%-9s%-16s', #header
+            '%-8s%-60s%-2s%9.3f%11.5f%-20s%-5s%', #row
+            '%-5s%-15s%-3s%1s', #foot
             '\r\n', # Win CR
             )
 
@@ -122,44 +133,33 @@ class SaleOrder(orm.Model):
                     _('order must be validated!'))
                 
             for line in order.order_line:
-                try: # Module: order_payment_cost (not in dep.)
-                    refund_line = 'S' if line.refund_line else ' '
-                except:
-                    refund_line = ' '    
                 parameter['input_file_string'] += self.pool.get(
                     'xmlrpc.server').clean_as_ascii(
                         mask % (                        
                             # -------------------------------------------------
                             #                    Header:
                             # -------------------------------------------------
-                            # Doc (2)
-                            order.journal_id.account_code,
-                            # Serie (2)
-                            order.journal_id.account_serie,
-                            # N.(6N) # val.
-                            int(order.number.split('/')[-1]), 
-                            # Date (8)
+                            order.name,
+                            order.causal,
                             '%s%s%s' % (
                                 order.date_order[:4], 
                                 order.date_order[5:7], 
-                                inordervoice.date_order[8:10], 
+                                order.date_order[8:10], 
                                 ),
-                            # Transport reason (2)    
-                            order.transportation_reason_id.import_id or '', 
-                            # Customer code (8)
-                            order.partner_id.sql_customer_code or '', 
-                            # Agent code (8)
+                            order.partner_id.sql_customer_code,
+                            order.deadline,
                             order.mx_agent_id.sql_agent_code or \
                                 order.mx_agent_id.sql_supplier_code or '',
+                            order.note,
+                            
+                            # -------------------------------------------------
+                            #                    Lines:
+                            # -------------------------------------------------
 
                             # -------------------------------------------------
                             #                    Detail:
                             # -------------------------------------------------
-                            # Tipo di riga 1 (D, R, T)
-                            'R',
-                            # Code (16)
                             line.product_id.default_code or '', 
-                            # Description (60)
                             clean_description(
                                 line.name if line.use_text_description \
                                     else line.product_id.name),
@@ -198,11 +198,16 @@ class SaleOrder(orm.Model):
         result_string_file = res.get('result_string_file', False)
         if result_string_file:
             if result_string_file.startswith('OK'):
-                # TODO test if number passed if for correct order number!
-                self.write(cr, uid, ids, {
-                    'xmlrpc_sync': True,
-                    }, context=context)
+                #self.write(cr, uid, ids, {
+                #    'xmlrpc_sync': True,
+                #    }, context=context)
                 return True
+            else:    
+                raise osv.except_osv(
+                    _('Sync error:'), 
+                    _('Error: %s') % result_string_file,
+                    )
+                
         # TODO write better error
         raise osv.except_osv(
             _('Sync error:'), 
@@ -210,8 +215,7 @@ class SaleOrder(orm.Model):
             )
         return False
     
-    _columns = {
-        'xmlrpc_sync': fields.boolean('XMLRPC syncronized'),        
-        }    
-
+    #_columns = {
+    #    'xmlrpc_sync': fields.boolean('XMLRPC syncronized'),        
+    #    }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
