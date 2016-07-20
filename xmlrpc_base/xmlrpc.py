@@ -27,7 +27,7 @@ import openerp.addons.decimal_precision as dp
 from openerp.osv import fields, osv, expression, orm
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
-from openerp import SUPERUSER_ID, api
+from openerp import SUPERUSER_ID
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
@@ -51,7 +51,7 @@ class XmlrpcServer(orm.Model):
         '''
         res = ''
         for c in value:
-            if ord(c) <127:
+            if ord(c) < 127:
                 res += c
             else:
                 res += '#'           
