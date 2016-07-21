@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<openerp>
-    <data>
-        <record id="sync_admin" model="res.groups">
-            <field name="name">XMLRPC Admin</field>
-        </record>
-    </data>
-</openerp>
