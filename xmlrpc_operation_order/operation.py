@@ -98,9 +98,9 @@ class SaleOrder(orm.Model):
         parameter = {}
         
         mask = '%s%s%s%s' % ( #3 block for readability:
-            '%-6s%-2s%-8s%-9s%-8s%-9s%-16s', #header
-            '%-8s%-60s%-2s%8s%10s%-20s%-5s%-8s', #row
-            '%-5s%-15s%-3s%1s', #foot
+            '%-6s%-2s%-8s%-9s%-8s%-9s%-16s%-1s%-3s', #header
+            '%-1s%-8s%-60s%-2s%15s%15s%-20s%-5s%-8s%-5s', #row
+            '%-9s%-5s%-15s%-3s%-15s%-4s%-4s', #foot
             '\r\n', # Win CR
             )
 
@@ -113,36 +113,44 @@ class SaleOrder(orm.Model):
                             # -------------------------------------------------
                             #                    Header:
                             # -------------------------------------------------
-                            order.name.split('/')[0][:6],
-                            '',# TODO order.causal,
-                            format_date(order.date_order),
-                            order.partner_id.sql_customer_code or '',
-                            format_date(order.date_deadline),
-                            '', # TODO Agent code  
-                            order.note[:16] if order.note else '',
+                            order.name.split('/')[0][:6], # order number
+                            '',# TODO order.causal, # Causal
+                            format_date(order.date_order), # Order date
+                            order.partner_id.sql_customer_code or '', # Cust. code
+                            format_date(order.date_deadline), # Deadline date
+                            '', # TODO Agent code
+                            order.note[:16] if order.note else '', # Note
+                            '1', # TODO stock number
+                            '1',# order.pricelist_id.currency_id.name if\
+                            #    order.pricelist_id else 'EUR', # Currency
                                                         
                             # -------------------------------------------------
                             #                    Lines:
                             # -------------------------------------------------
-                            (line.product_id.default_code or '')[:8],
-                            ((line.name.split('] ')[-1]).split('\n')[0])[:60],
-                            '', # TODO line.product_id.uom_id.account_ref or ''
-                            ('%9.3f' % line.product_uom_qty).replace('.', ''),
-                            ('%11.5f' % line.price_unit).replace('.', ''),
-                            line.discount or '',
-                            '', # TODO vat tax_id
-                            format_date(line.date_deadline),
-
+                            'D', # Row type
+                            (line.product_id.default_code or '')[:8], # Code
+                            ((line.name.split('] ')[-1]).split('\n')[0])[:60], # Description
+                            '', # TODO line.product_id.uom_id.account_ref or '' # UM
+                            ('%15.6f' % line.product_uom_qty).replace('.', ','), # Q.ty
+                            ('%15.5f' % line.price_unit).replace('.', ','), # Price
+                            line.discount or '', # Discount
+                            '', # TODO vat tax_id # VAT or esention
+                            format_date(line.date_deadline), # Deadline date
+                            ('%5.2f' % 0.0).replace('.', ','), # Sale prov.
+                            
                             # -------------------------------------------------
                             #                    Footer:
                             # -------------------------------------------------
+                            order.address_id.sql_destination_code \
+                                if order.address_id else '', # Destination
+                            '', #order.carriage_condition_id.account_ref or '',#Port
+                            '', # TODO transport
                             '', # TODO total parcels 
                             '', # TODO weight total
-                            '', # TODO port
-                            '', # TODO transport
+                            '', # TODO extenal layout
+                            '', # TODO payment
                             ))
 
-        import pdb; pdb.set_trace()
         res = self.pool.get('xmlrpc.operation').execute_operation(
             cr, uid, 'order', parameter=parameter, context=context)
             
