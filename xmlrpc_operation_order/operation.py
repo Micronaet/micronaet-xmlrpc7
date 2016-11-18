@@ -100,7 +100,7 @@ class SaleOrder(orm.Model):
         mask = '%s%s%s%s' % ( #3 block for readability:
             '%-6s%-2s%-8s%-9s%-8s%-9s%-16s%-1s%-3s', #header
             '%-1s%-8s%-60s%-2s%15s%15s%-20s%-5s%-8s%-5s', #row
-            '%-9s%-5s%-15s%-3s%-15s%-4s%-4s', #foot
+            '%-9s%-5s%-1s%-3s%-15s%-4s%-4s', #foot
             '\r\n', # Win CR
             )
 
@@ -114,39 +114,39 @@ class SaleOrder(orm.Model):
                             #                    Header:
                             # -------------------------------------------------
                             order.name.split('/')[0][:6], # order number
-                            '',# TODO order.causal, # Causal
+                            '1',# TODO order.causal, # Causal
                             format_date(order.date_order), # Order date
                             order.partner_id.sql_customer_code or '', # Cust. code
                             format_date(order.date_deadline), # Deadline date
                             '', # TODO Agent code
                             order.note[:16] if order.note else '', # Note
                             '1', # TODO stock number
-                            '1',# order.pricelist_id.currency_id.name if\
+                            '7',# order.pricelist_id.currency_id.name if\
                             #    order.pricelist_id else 'EUR', # Currency
                                                         
                             # -------------------------------------------------
                             #                    Lines:
                             # -------------------------------------------------
-                            'D', # Row type
+                            'R', # Row type
                             (line.product_id.default_code or '')[:8], # Code
                             ((line.name.split('] ')[-1]).split('\n')[0])[:60], # Description
                             '', # TODO line.product_id.uom_id.account_ref or '' # UM
-                            ('%15.6f' % line.product_uom_qty).replace('.', ','), # Q.ty
-                            ('%15.5f' % line.price_unit).replace('.', ','), # Price
+                            ('%15.6f' % line.product_uom_qty), # Q.ty
+                            ('%15.5f' % line.price_unit), # Price
                             line.discount or '', # Discount
-                            '', # TODO vat tax_id # VAT or esention
+                            ' 22  ', # TODO vat tax_id # VAT or esention
                             format_date(line.date_deadline), # Deadline date
-                            ('%5.2f' % 0.0).replace('.', ','), # Sale prov.
+                            ('%5.2f' % 0.0), # Sale prov.
                             
                             # -------------------------------------------------
                             #                    Footer:
                             # -------------------------------------------------
                             order.address_id.sql_destination_code \
                                 if order.address_id else '', # Destination
-                            '', #order.carriage_condition_id.account_ref or '',#Port
-                            '', # TODO transport
-                            '', # TODO total parcels 
-                            '', # TODO weight total
+                            'A', #order.carriage_condition_id.account_ref or '',#Port
+                            'M', # TODO transport
+                            '1', # TODO total parcels 
+                            '10', # TODO weight total
                             '', # TODO extenal layout
                             '', # TODO payment
                             ))
