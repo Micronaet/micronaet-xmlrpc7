@@ -100,11 +100,12 @@ class SaleOrder(orm.Model):
         mask = '%s%s%s%s' % ( #3 block for readability:
             '%-6s%-2s%-8s%-9s%-8s%-9s%-16s%-1s%-3s', #header
             '%-1s%-8s%-60s%-2s%15s%15s%-20s%-5s%-8s%-5s', #row
-            '%-9s%-5s%-1s%-3s%-15s%-4s%-4s', #foot
+            '%-9s%-5s%-1s%-3s%-15s%-4s%-4s%-9s%1s', #foot
             '\r\n', # Win CR
             )
 
         parameter['input_file_string'] = ''
+        import pdb; pdb.set_trace()
         for order in self.browse(cr, uid, ids, context=context):
             for line in order.order_line:
                 parameter['input_file_string'] += self.pool.get(
@@ -143,12 +144,15 @@ class SaleOrder(orm.Model):
                             # -------------------------------------------------
                             order.address_id.sql_destination_code \
                                 if order.address_id else '', # Destination
-                            'A', #order.carriage_condition_id.account_ref or '',#Port
+                            order.carriage_condition_id.account_code or '', # Port
                             'M', # TODO transport
                             '1', # TODO total parcels 
                             '10', # TODO weight total
-                            '', # TODO extenal layout
-                            '', # TODO payment
+                            '', #order.goods_description_id.import_id or '', # external layout
+                            '', #order.payment_term_id.account_ref or '', # payment
+                            order.carrier_id.partner_id.sql_supplier.code if \
+                                order.carrier_id.partner_id else '',
+                            #order.transportation_reason_id.account_ref or ''
                             ))
 
         res = self.pool.get('xmlrpc.operation').execute_operation(
