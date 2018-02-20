@@ -165,12 +165,12 @@ class MrpProduction(orm.Model):
             return False
 
         result_string_file = res.get('result_string_file', '')
+        import pdb; pdb.set_trace()
         if not result_string_file:
             _logger.warning('Not reply from XMLRPC (no data or error)')
             return False
 
         error_file = u''
-        import pdb; pdb.set_trace()
         for line in result_string_file.split('\n'):            
             row = line.strip()
             if not row:
