@@ -190,7 +190,6 @@ class MrpProduction(orm.Model):
         # ---------------------------------------------------------------------
         # Close MRP all lot sync:
         # ---------------------------------------------------------------------
-        import pdb; pdb.set_trace()
         for mrp in mrp_check:
             update = True
             for pack in mrp.product_packaging_ids:
