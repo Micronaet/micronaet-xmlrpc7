@@ -168,7 +168,7 @@ class MrpProduction(orm.Model):
             return False
 
         for line in result_string_file:
-            row = line.strip(line).split('|')            
+            row = line.strip(line).split('|')
             item_id = int(row[0].strip())
             account_id = row[1].strip()
             ul_pool.write(cr, uid, item_id, {
