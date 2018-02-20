@@ -180,7 +180,7 @@ class MrpProduction(orm.Model):
                 
             item_id = int(row[0].strip())
             account_id = row[1].strip()
-            ul_pool.write(cr, uid, item_id, {
+            ul_pool.write(cr, uid, [item_id], {
                 'account_id', account_id,
                 }, context=context)
             
@@ -189,6 +189,7 @@ class MrpProduction(orm.Model):
         # ---------------------------------------------------------------------
         # Close MRP all lot sync:
         # ---------------------------------------------------------------------
+        import pdb; pdb.set_trace()
         for mrp in mrp_check:
             update = True
             for pack in mrp.product_packaging_ids:
