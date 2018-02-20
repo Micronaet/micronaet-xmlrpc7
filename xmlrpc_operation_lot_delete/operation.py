@@ -121,7 +121,6 @@ class MrpProduction(orm.Model):
         # DB for mark MRP status:
         mrp_ids = [] # List of touched mrp
         ul_closed_ids = {} # For check mrp that can be marked as accounting
-        
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
             if not ul.ul_id.code:
                 continue # jump line not in account

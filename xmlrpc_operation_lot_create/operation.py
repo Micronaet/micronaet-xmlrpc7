@@ -170,6 +170,7 @@ class MrpProduction(orm.Model):
             return False
 
         error_file = u''
+        import pdb; pdb.set_trace()
         for line in result_string_file.split('\n'):            
             row = line.strip()
             if not row:
