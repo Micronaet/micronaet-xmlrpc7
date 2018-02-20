@@ -142,7 +142,7 @@ class MrpProduction(orm.Model):
         mrp_check = [] # List of MRP order to check after import
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
             if ul.production_id not in mrp_check:
-                mrp_check.append(ul.production_id)                
+                mrp_check.append(ul.production_id.id)
             parameter['input_file_string'] += self.pool.get(
                 'xmlrpc.server').clean_as_ascii(
                     '%-15s%-15s%-15s%-15s\r\n' % (
@@ -185,13 +185,14 @@ class MrpProduction(orm.Model):
             ul_pool.write(cr, uid, [item_id], {
                 'account_id': account_id,
                 }, context=context)
-            
-        _logger.error('Error in file:\n %s' % error_file)
+        if error_file:    
+            _logger.error('Error in file:\n %s' % error_file)
         
         # ---------------------------------------------------------------------
         # Close MRP all lot sync:
         # ---------------------------------------------------------------------
-        for mrp in mrp_check:
+        # Reload MRP for lot change account_id:
+        for mrp in self.browse(cr, uid, mrp_check, context=context):
             update = True
             for pack in mrp.product_packaging_ids:
                 if not pack.account_id:
