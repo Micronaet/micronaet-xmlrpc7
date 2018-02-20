@@ -80,7 +80,8 @@ class MrpProduction(orm.Model):
     # -------------------------------------------------------------------------
     # Scheduled
     # -------------------------------------------------------------------------
-    def xmlrpc_export_lot_create(self, cr, uid, from_date, context=None):
+    def xmlrpc_export_lot_create(self, cr, uid, from_date, update_ul=False, 
+            context=None):
         ''' Schedule update of production on accounting
         '''
         # ---------------------------------------------------------------------
@@ -119,9 +120,10 @@ class MrpProduction(orm.Model):
         # 1. Launch for every production the regenerate button
         # ---------------------------------------------------------------------
         _logger.info('%s production to update UL' % len(production_ids))
-        for item_id in production_ids:
-            self.load_package_for_production(cr, uid, [item_id], 
-                context=context)
+        if update_ul:
+            for item_id in production_ids:
+                self.load_package_for_production(cr, uid, [item_id], 
+                    context=context)
             
         # ---------------------------------------------------------------------
         # 2. Write lines not present
