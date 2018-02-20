@@ -106,6 +106,7 @@ class MrpProduction(orm.Model):
         parameter['input_file_string'] = ''
 
         # Get new production to be sync:
+        import pdb; pdb.set_trace()
         production_ids = self.search(cr, uid, [
             # From date filter for not all old importation (limit):
             ('create_date', '>=', from_date),            
