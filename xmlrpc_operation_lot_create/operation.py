@@ -83,7 +83,9 @@ class MrpProduction(orm.Model):
     def xmlrpc_export_lot_create(self, cr, uid, from_date, context=None):
         ''' Schedule update of production on accounting
         '''
+        # ---------------------------------------------------------------------
         # Utility:
+        # ---------------------------------------------------------------------
         def clean_mrp(name):
             '''
             '''
@@ -113,13 +115,17 @@ class MrpProduction(orm.Model):
             ('state', 'in', ('draft', 'production')),
             ], context=context)
             
+        # ---------------------------------------------------------------------
         # 1. Launch for every production the regenerate button
+        # ---------------------------------------------------------------------
         _logger.info('%s production to update UL' % len(production_ids))
         for item_id in production_ids:
             self.load_package_for_production(cr, uid, [item_id], 
                 context=context)
             
+        # ---------------------------------------------------------------------
         # 2. Write lines not present
+        # ---------------------------------------------------------------------
         ul_pool = self.pool.get('mrp.production.product.packaging')
         ul_ids = ul_pool.search(cr, uid, [
             # Only not sync:
@@ -127,11 +133,13 @@ class MrpProduction(orm.Model):
             ('account_id', '=', False), # Not sync
             ], context=context)
         
+        # ---------------------------------------------------------------------
         # Generate file to be passed:
+        # ---------------------------------------------------------------------
         mrp_check = [] # List of MRP order to check after import
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
-            if ul.production_id.id not in mrp_check:
-                mrp_check.append(ul.production_id.id)                
+            if ul.production_id not in mrp_check:
+                mrp_check.append(ul.production_id)                
             parameter['input_file_string'] += self.pool.get(
                 'xmlrpc.server').clean_as_ascii(
                     '%-15s%-15s%-15s%-15s\r\n' % (
@@ -143,19 +151,35 @@ class MrpProduction(orm.Model):
 
         _logger.info('Data: %s' % (parameter, ))
         res = self.pool.get('xmlrpc.operation').execute_operation(
-            cr, uid, 'log_create', parameter=parameter, context=context)
-        result_string_file = res.get('result_string_file', False)
+            cr, uid, 'lot_create', parameter=parameter, context=context)
+        
+        # ---------------------------------------------------------------------
+        # Parse result:    
+        # ---------------------------------------------------------------------
+        error = res.get('error', '')
+        if error:
+            _logger.error('Error in transfer operation: %s' % error)
+            return False
+
+        result_string_file = res.get('result_string_file', '')
+        if not result_string_file:
+            _logger.warning('Not reply from XMLRPC (no data or error)')
+            return False
+
         for line in result_string_file:
-            row = line.strip(line).split('|')
+            row = line.strip(line).split('|')            
             item_id = int(row[0].strip())
             account_id = row[1].strip()
             ul_pool.write(cr, uid, item_id, {
                 'account_id', account_id,
                 }, context=context)
             
-        for mrp_id in mrp_check:
+        # ---------------------------------------------------------------------
+        # Close MRP all lot sync:
+        # ---------------------------------------------------------------------
+        for mrp in mrp_check:
             update = True
-            for pack in mrp_id.product_packaging_ids:
+            for pack in mrp.product_packaging_ids:
                 if not pack.account_id:
                     update = False
                     break
@@ -165,5 +189,4 @@ class MrpProduction(orm.Model):
                         }, context=context)
         _logger.info('End correct importation XMLRPC sync lot creation')
         return True
-    
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
