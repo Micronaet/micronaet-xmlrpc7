@@ -169,8 +169,11 @@ class MrpProduction(orm.Model):
 
         error_file = u''
         import pdb; pdb.set_trace()
-        for line in result_string_file:
-            row = line.strip(line).split('|')
+        for line in result_string_file.split('\n'):            
+            row = line.strip()
+            if not row:
+                continue # jump empty row
+            row = line.split('|')
             if len(row) != 2:
                 error_file += u'%s\n' % row
                 continue
