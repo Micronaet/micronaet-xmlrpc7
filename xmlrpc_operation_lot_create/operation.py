@@ -168,6 +168,7 @@ class MrpProduction(orm.Model):
             return False
 
         error_file = u''
+        import pdb; pdb.set_trace()
         for line in result_string_file:
             row = line.strip(line).split('|')
             if len(row) != 2:
