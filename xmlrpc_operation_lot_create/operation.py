@@ -90,7 +90,7 @@ class MrpProduction(orm.Model):
             '''
             '''
             name = name.split('/')[-1]
-            name = name[2:]
+            #name = name[2:]
             return name
 
         if context is None:
