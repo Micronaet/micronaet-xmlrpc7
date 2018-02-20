@@ -106,7 +106,6 @@ class MrpProduction(orm.Model):
         parameter['input_file_string'] = ''
 
         # Get new production to be sync:
-        import pdb; pdb.set_trace()
         production_ids = self.search(cr, uid, [
             # From date filter for not all old importation (limit):
             ('create_date', '>=', from_date),            
@@ -130,7 +129,8 @@ class MrpProduction(orm.Model):
         ul_pool = self.pool.get('mrp.production.product.packaging')
         ul_ids = ul_pool.search(cr, uid, [
             # Only not sync:
-            ('production_id.ul_state', '=', 'draft'), # MRP to be sync
+            ('production_id', 'in', production_ids), # Only selected production
+            #('production_id.ul_state', '=', 'draft'), # MRP to be sync
             ('account_id', '=', False), # Not sync
             ], context=context)
         
