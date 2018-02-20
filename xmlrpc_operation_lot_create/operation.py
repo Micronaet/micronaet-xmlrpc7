@@ -80,7 +80,7 @@ class MrpProduction(orm.Model):
     # -------------------------------------------------------------------------
     # Scheduled
     # -------------------------------------------------------------------------
-    def xmlrpc_export_lot_create(self, cr, uid, from_date, update_ul=False, 
+    def xmlrpc_export_lot_create(self, cr, uid, from_date, update_ul=True, 
             context=None):
         ''' Schedule update of production on accounting
         '''
