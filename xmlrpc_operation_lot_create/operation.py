@@ -168,7 +168,6 @@ class MrpProduction(orm.Model):
             return False
 
         error_file = u''
-        update_db = {}
         for line in result_string_file.split('\n'):            
             row = line.strip()
             if not row:
@@ -180,13 +179,8 @@ class MrpProduction(orm.Model):
                 
             item_id = int(row[0].strip())
             account_id = row[1].strip()
-            update_db[item_id] = account_id
-
-        # Raise errore in previous loop
-        import pdb; pdb.set_trace()
-        for item_id, account_id in update_db.iteritems():    
             ul_pool.write(cr, uid, [item_id], {
-                'account_id', account_id,
+                'account_id': account_id,
                 }, context=context)
             
         _logger.error('Error in file:\n %s' % error_file)
