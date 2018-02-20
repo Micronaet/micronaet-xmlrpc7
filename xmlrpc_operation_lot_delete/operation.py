@@ -87,6 +87,11 @@ class MrpProduction(orm.Model):
             context = {}
 
         _logger.info('Start XMLRPC sync for lot deletion (clean)')
+
+        # Pool used:
+        xml_pool = self.pool.get('xmlrpc.server')
+        operation_pool = self.pool.get('xmlrpc.operation')
+        
         parameter = {}
         
         # ---------------------------------------------------------------------
@@ -95,74 +100,84 @@ class MrpProduction(orm.Model):
         # Generate string for export file:
         parameter['input_file_string'] = ''
 
-        # Get new production to be sync:
-        production_ids = self.search(cr, uid, [
-            # New production:
-            ('ul_state', '=', 'draft'),
-            # Draft or production (other lot are delete)
-            ('state', 'in', ('close', 'cancel')),
-            ], context=context)
-            
         # ---------------------------------------------------------------------
         # Pass all lot created:
-        # ---------------------------------------------------------------------
+        # ---------------------------------------------------------------------        
         ul_pool = self.pool.get('mrp.production.product.packaging')
         ul_ids = ul_pool.search(cr, uid, [
             # Only not sync:
-            ('production_id.ul_state', '=', 'draft'), # Created before
+            ('production_id.ul_state', '!=', 'deleted'), # draft or account
             ('production_id.state', 'in', ('close', 'cancel')), # MRP 2be sync
             ('account_id', '!=', False), # Sync
             ], context=context)
-        
+            
+        if not ul_ids:
+            _logger.error('Nothing to sync!')
+            return False
+            
         # ---------------------------------------------------------------------
         # Generate file to be passed:
         # ---------------------------------------------------------------------
-        ul_closed_ids = []
+        # DB for mark MRP status:
+        mrp_ids = [] # List of touched mrp
+        ul_closed_ids = {} # For check mrp that can be marked as accounting
+        
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
-            parameter['input_file_string'] += self.pool.get(
-                'xmlrpc.server').clean_as_ascii(
+            if not ul.ul_id.code:
+                continue # jump line not in account
+            
+            parameter['input_file_string'] += xml_pool.clean_as_ascii(
                     '%-15s%-15s\r\n' % (
                     ul.id,
                     ul.ul_id.code or '',
                     ))
 
+            # Check data:
+            production_id = ul.production_id.id
+            ul_closed_ids[ul.id] = production_id
+            mrp_ids.append(production_id)
+
         _logger.info('Data: %s' % (parameter, ))
-        res = self.pool.get('xmlrpc.operation').execute_operation(
+        res = operation_pool.execute_operation(
             cr, uid, 'lot_delete', parameter=parameter, context=context)
         
         # ---------------------------------------------------------------------
         # Parse result:    
         # ---------------------------------------------------------------------
-        error = res.get('error', '')
+        error = res.get('error', False)
         if error:
             _logger.error('Error in transfer operation: %s' % error)
             return False
-
-        result_string_file = res.get('result_string_file', '')
+        result_string_file = res.get('result_string_file', False)
         if not result_string_file:
             _logger.warning('Not reply from XMLRPC (no data or error)')
             return False
 
         for line in result_string_file:
-            row = line.strip(line)#.split('|')            
+            row = line.strip(line)
+            if not row:
+                _logger.warning('Jump empty result line!')
+                continue
+
             ul_id = int(row)
             ul_pool.write(cr, uid, ul_id, {
-                'account_id', _id,
+                'deleted': True,
                 }, context=context)
+                
+            if ul_id in ul_closed_ids:
+                del(ul_closed_ids[ul_id]) # remove ul so production ID
+            else:
+                _logger.error('Mexal return a ID not present: %s' % ul_id)
             
         # ---------------------------------------------------------------------
         # Close MRP all lot sync:
         # ---------------------------------------------------------------------
-        for mrp in mrp_check:
-            update = True
-            for pack in mrp.product_packaging_ids:
-                if not pack.account_id:
-                    update = False
-                    break
-                if udpate: # MRP has all pack lot delete and sync:
-                    self.write(cr, uid, ul_ids, {
-                        'deleted': True,
-                        }, context=context)
+        mrp_open_ids = ul_closed_ids.values()
+        for mrp_id in mrp_ids:
+            if mrp_id not in mrp_open_ids:
+                self.write(cr, uid, ul_ids, {
+                    'ul_state': '',
+                    }, context=context)
         _logger.info('End clean lot deleted XMLRPC sync')
         return True
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
