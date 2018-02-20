@@ -167,14 +167,21 @@ class MrpProduction(orm.Model):
             _logger.warning('Not reply from XMLRPC (no data or error)')
             return False
 
+        error_file = u''
         for line in result_string_file:
             row = line.strip(line).split('|')
+            if len(row) != 2:
+                error_file += u'%s\n' % row
+                continue
+                
             item_id = int(row[0].strip())
             account_id = row[1].strip()
             ul_pool.write(cr, uid, item_id, {
                 'account_id', account_id,
                 }, context=context)
             
+        _logger.error('Error in file:\n %s' % error_file)
+        
         # ---------------------------------------------------------------------
         # Close MRP all lot sync:
         # ---------------------------------------------------------------------
