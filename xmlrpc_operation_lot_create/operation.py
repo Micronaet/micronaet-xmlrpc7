@@ -197,7 +197,7 @@ class MrpProduction(orm.Model):
                     update = False
                     break
                 if udpate: # MRP has all pack lot created and sync:
-                    self.write(cr, uid, {
+                    self.write(cr, uid, mrp, {
                         'ul_state': 'accounting',
                         }, context=context)
         _logger.info('End correct importation XMLRPC sync lot creation')
