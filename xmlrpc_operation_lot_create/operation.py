@@ -170,7 +170,6 @@ class MrpProduction(orm.Model):
                     ))
 
         _logger.info('Data: %s' % (parameter, ))
-        import pdb; pdb.set_trace()
         res = self.pool.get('xmlrpc.operation').execute_operation(
             cr, uid, 'lot_create', parameter=parameter, context=context)
         
@@ -183,7 +182,6 @@ class MrpProduction(orm.Model):
             return False
 
         result_string_file = res.get('result_string_file', '')
-        import pdb; pdb.set_trace()
         if not result_string_file:
             _logger.warning('Not reply from XMLRPC (no data or error)')
             return False
