@@ -93,6 +93,22 @@ class MrpProduction(orm.Model):
             #name = name[2:]
             return name
 
+        def set_mrp_as_accounting(self, cr, uid, ids, context=context):
+            ''' Close production with all package sync
+            '''    
+            # Reload MRP for lot change account_id:
+            for mrp in self.browse(cr, uid, ids, context=context):
+                update = True
+                for pack in mrp.product_packaging_ids:
+                    if not pack.account_id:
+                        update = False
+                        break # one False no state passing
+                if udpate: # MRP has all pack lot created and sync:
+                    self.write(cr, uid, mrp, {
+                        'ul_state': 'accounting',
+                        }, context=context)
+            return True            
+
         if context is None:
             context = {}
 
@@ -137,6 +153,13 @@ class MrpProduction(orm.Model):
         # ---------------------------------------------------------------------
         # Generate file to be passed:
         # ---------------------------------------------------------------------
+        import pdb; pdb.set_trace()
+        if not ul_ids:
+            set_mrp_as_accounting(self, cr, uid, production_ids, 
+                context=context)            
+            _logger.error('No UL to sync (set account MRP for last sync)')
+            return False
+            
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
             parameter['input_file_string'] += self.pool.get(
                 'xmlrpc.server').clean_as_ascii(
@@ -186,17 +209,7 @@ class MrpProduction(orm.Model):
         # ---------------------------------------------------------------------
         # Close MRP all lot sync:
         # ---------------------------------------------------------------------
-        # Reload MRP for lot change account_id:
-        for mrp in self.browse(cr, uid, production_ids, context=context):
-            update = True
-            for pack in mrp.product_packaging_ids:
-                if not pack.account_id:
-                    update = False
-                    break # one False no state passing
-            if udpate: # MRP has all pack lot created and sync:
-                self.write(cr, uid, mrp, {
-                    'ul_state': 'accounting',
-                    }, context=context)
+        set_mrp_as_accounting(self, cr, uid, production_ids, context=context)
         _logger.info('End correct importation XMLRPC sync lot creation')
         return True
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
