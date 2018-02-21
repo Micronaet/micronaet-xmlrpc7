@@ -153,11 +153,10 @@ class MrpProduction(orm.Model):
         # ---------------------------------------------------------------------
         # Generate file to be passed:
         # ---------------------------------------------------------------------
-        import pdb; pdb.set_trace()
         if not ul_ids:
             set_mrp_as_accounting(self, cr, uid, production_ids, 
                 context=context)            
-            _logger.error('No UL to sync (set account MRP for last sync)')
+            _logger.warning('No UL to sync (set account MRP for last sync)')
             return False
             
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
