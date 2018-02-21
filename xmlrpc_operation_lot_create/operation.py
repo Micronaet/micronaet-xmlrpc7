@@ -104,7 +104,7 @@ class MrpProduction(orm.Model):
                         update = False
                         break # one False no state passing
                 if update: # MRP has all pack lot created and sync:
-                    self.write(cr, uid, mrp, {
+                    self.write(cr, uid, mrp.id, {
                         'ul_state': 'accounting',
                         }, context=context)
             return True            
