@@ -153,7 +153,6 @@ class MrpProduction(orm.Model):
         # ---------------------------------------------------------------------
         # Generate file to be passed:
         # ---------------------------------------------------------------------
-        import pdb; pdb.set_trace()
         if not ul_ids:
             set_mrp_as_accounting(self, cr, uid, production_ids, 
                 context=context)            
@@ -171,6 +170,7 @@ class MrpProduction(orm.Model):
                     ))
 
         _logger.info('Data: %s' % (parameter, ))
+        import pdb; pdb.set_trace()
         res = self.pool.get('xmlrpc.operation').execute_operation(
             cr, uid, 'lot_create', parameter=parameter, context=context)
         
