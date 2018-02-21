@@ -153,6 +153,7 @@ class MrpProduction(orm.Model):
         # ---------------------------------------------------------------------
         # Generate file to be passed:
         # ---------------------------------------------------------------------
+        import pdb; pdb.set_trace()
         if not ul_ids:
             set_mrp_as_accounting(self, cr, uid, production_ids, 
                 context=context)            
