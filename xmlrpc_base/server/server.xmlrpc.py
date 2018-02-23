@@ -70,7 +70,6 @@ def execute(operation, parameter=None):
             error: if there's an error during operation
             result_string_file: output file returned as a string
     '''
-    import pdb; pdb.set_trace()
     print '[INFO] Run operation: %s Parameter list: %s' % (
         operation, parameter.keys())
 
@@ -192,7 +191,7 @@ def execute(operation, parameter=None):
         return res
         
     try:
-        os.remove(result_filename) # Remove file (not moved)
+        os.remove(input_filename) # Remove file (not moved)
         print '[INFO] Removing input file!'
     except:
         print '[WARNING] Cannot removing input file!'
