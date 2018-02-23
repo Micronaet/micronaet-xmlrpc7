@@ -160,13 +160,15 @@ class MrpProduction(orm.Model):
             return False
             
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
+            product = ul.production_id.bom_id.product_id
             parameter['input_file_string'] += self.pool.get(
                 'xmlrpc.server').clean_as_ascii(
-                    '%-15s%-15s%-15s%-15s\r\n' % (
+                    '%-15s%-15s%-15s%-15s%-32s\r\n' % (
                     ul.id,
                     clean_mrp(ul.production_id.name),
-                    ul.production_id.bom_id.product_id.default_code or '',
-                    ul.ul_id.code or '',                
+                    product.default_code or '',
+                    ul.ul_id.code or '',      
+                    (product.name or '')[:32],
                     ))
 
         _logger.info('Data: %s' % (parameter, ))
