@@ -186,12 +186,14 @@ def execute(operation, parameter=None):
             else:    
                 print '[WARNING] No input log file!'                
             os.remove(result_filename) # Remove file (not moved)
+            print '[INFO] Removing result file!'
     except:
         res['error'] = 'Error reading result file'
         return res
         
     try:
         os.remove(result_filename) # Remove file (not moved)
+        print '[INFO] Removing input file!'
     except:
         print '[WARNING] Cannot removing input file!'
         pass    
