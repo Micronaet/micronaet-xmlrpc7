@@ -123,6 +123,9 @@ class XmlrpcOperation(orm.Model):
         'result_filename': fields.char('Result filename', size=100),
         'result_path': fields.char('Result path', size=180),
         'note': fields.text('Note'),
+        # Log folder path:
+        'input_log_path': fields.char('Input log path', size=180),
+        'result_log_path': fields.char('Input log path', size=180),
         }        
         
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

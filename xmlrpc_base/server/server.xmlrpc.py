@@ -20,9 +20,11 @@
 ###############################################################################
 import os
 import sys
-from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+import shutil
 import ConfigParser
 import erppeek # for request VS ODOO
+from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
+from datetime import datetime
 
 # -----------------------------------------------------------------------------
 #                                Parameters
@@ -68,6 +70,7 @@ def execute(operation, parameter=None):
             error: if there's an error during operation
             result_string_file: output file returned as a string
     '''
+    import pdb; pdb.set_trace()
     print '[INFO] Run operation: %s Parameter list: %s' % (
         operation, parameter.keys())
 
@@ -90,11 +93,33 @@ def execute(operation, parameter=None):
         return res
 
     operation_proxy = operation_pool.browse(operation_ids)[0]    
+    # Command:
     shell_command = operation_proxy.shell_command
+
+    # Input
     input_filename = operation_proxy.input_filename
     input_path = operation_proxy.input_path
+    input_log_path = operation_proxy.input_log_path
+
+    # Result:
     result_filename = operation_proxy.result_filename
     result_path = operation_proxy.result_path
+    result_log_path = operation_proxy.result_log_path
+
+    # History filename (if present):
+    now = datetime.now().strftime('%Y%m%d_%H%M%S')
+    if input_log_path:
+        input_log_filename = os.path.join(
+            input_log_path,     
+            '%s.%s' % (now, input_filename),
+            )
+            
+    if result_log_path:
+        result_log_filename = os.path.join(
+            result_log_path,     
+            '%s.%s' % (now, result_filename),
+            )
+            
     demo = operation_proxy.demo
     if not shell_command:
         res['error'] = 'Error no shell command'
@@ -116,6 +141,13 @@ def execute(operation, parameter=None):
             input_file.write(input_file_string) # TODO \r problems?!?
             input_file.close()
             print '[INFO] Create input file: %s' % input_filename
+            
+            # History:            
+            if input_log_path:
+                shutil.copy(input_filename, input_log_filename)
+                print '[INFO] Create log file: %s' % input_log_filename
+            else:    
+                print '[WARNING] No input log file!'
     except:
         res['error'] = 'Error creating input file'
         return res
@@ -145,8 +177,16 @@ def execute(operation, parameter=None):
                 res['result_string_file'] += '%s\n' % line
 
             res_file.close()
-            os.remove(result_filename) # TODO history?
-            print '[INFO] Manage result file: %s' % result_filename
+            print '[INFO] Parsed result file: %s' % result_filename
+
+            # History:            
+            if result_log_path:
+                shutil.copy(result_filename, result_log_filename)
+                print '[INFO] Create log file: %s' % result_log_filename
+            else:    
+                print '[WARNING] No input log file!'                
+            os.remove(result_filename) # Remove file (not moved)
+
     except:
         res['error'] = 'Error reading result file'
         return res
@@ -166,11 +206,11 @@ server.register_function(execute, 'execute')
 #                       Run the server's main loop:
 # -----------------------------------------------------------------------------
 # Log connection:
-print 'Start XMLRPC server on %s:%s' % (
+print 'Micronaet S.r.l.\nStart XMLRPC server ver. 7.0 (mountless) on %s:%s' % (
     xmlrpc_host,
     xmlrpc_port,
     )
-print 'ODOO connection at %s@%s:%s/%s' % (
+print 'OpenERP connection at %s@%s:%s/%s\nwaiting for calls...\n' % (
     odoo_user,
     odoo_host,
     odoo_port,
