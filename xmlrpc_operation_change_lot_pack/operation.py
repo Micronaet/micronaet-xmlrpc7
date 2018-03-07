@@ -124,14 +124,14 @@ class ProductProduct(orm.Model):
         error = res.get('error', '')
         if error:
             raise osv.except_osv(
-                _('Error moving'), 
+                _(u'Error moving'), 
                 _(u'Error in transfer operation: %s') % error,
                 )
 
         result_string_file = res.get('result_string_file', '')
         if not result_string_file:
             raise osv.except_osv(
-                _('Error moving'), 
+                _(u'Error moving'), 
                 _(u'Not reply from XMLRPC (no data or error)'),
                 )
 
@@ -139,7 +139,7 @@ class ProductProduct(orm.Model):
             return True # Correct passed!
         else:    
             raise osv.except_osv(
-                _('Error moving'), 
+                _(u'Error moving'), 
                 _(u'Account error: %s' % result_string_file),
                 )
             return False    
