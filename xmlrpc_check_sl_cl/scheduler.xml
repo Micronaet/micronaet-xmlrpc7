@@ -1,16 +1,16 @@
 <?xml version="1.0" ?>
 <openerp>
 	<data noupdate="1"> 
-		<record id="ir_cron_etl_mrp_generate_ul_account_0" model="ir.cron">
-			<field eval="&quot;&quot;&quot;xmlrpc_export_lot_create&quot;&quot;&quot;" name="function"/>
+		<record id="ir_cron_etl_mrp_export_check_cl_sl_0" model="ir.cron">
+			<field eval="&quot;&quot;&quot;xmlrpc_export_check_cl_sl&quot;&quot;&quot;" name="function"/>
 			<field eval="&quot;&quot;&quot;days&quot;&quot;&quot;" name="interval_type"/>
 			<field name="user_id" ref="base.user_root"/>
-			<field eval="&quot;&quot;&quot;ETL: MRP UL Account generation&quot;&quot;&quot;" name="name"/>
+			<field eval="&quot;&quot;&quot;ETL: Check CL and SL from account&quot;&quot;&quot;" name="name"/>
 			<field eval="-1" name="numbercall"/>
 			<field eval="&quot;&quot;&quot;2010-07-04 20:00:00&quot;&quot;&quot;" name="nextcall"/>
 			<field eval="5" name="priority"/>
 			<field eval="0" name="doall"/>
-			<field name="args">('2018-02-12', )</field>
+			<field name="args">()</field>
 			<field eval="1" name="active"/>			
 			<field eval="1" name="interval_number"/>
 			<field eval="&quot;&quot;&quot;mrp.production&quot;&quot;&quot;" name="model"/>
