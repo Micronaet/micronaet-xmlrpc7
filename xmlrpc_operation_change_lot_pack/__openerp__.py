@@ -38,8 +38,6 @@
     'data': [
         'lot_view.xml',
         'data/operation.xml',
-        
-        #'scheduler.xml',
         ],
     'active': False,
     'installable': True,
