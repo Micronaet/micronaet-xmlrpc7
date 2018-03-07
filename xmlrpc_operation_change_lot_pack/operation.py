@@ -134,9 +134,10 @@ class ProductProduct(orm.Model):
                 _(u'Error moving'), 
                 _(u'Not reply from XMLRPC (no data or error)'),
                 )
-
+        
         if result_string_file.startswith('OK'):
-            return True # Correct passed!
+            # TODO update fast current lot status? <<<<<<<<<<<<<<<<<<<<<<<<<<<<
+            return True # Correct passed!            
         else:    
             raise osv.except_osv(
                 _(u'Error moving'), 
