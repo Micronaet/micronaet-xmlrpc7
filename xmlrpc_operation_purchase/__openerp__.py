@@ -18,7 +18,7 @@
 ###############################################################################
 
 {
-    'name': 'XMLRPC Operation ORder',
+    'name': 'XMLRPC Operation Purchase order',
     'version': '0.1',
     'category': 'ETL',
     'description': '''        
