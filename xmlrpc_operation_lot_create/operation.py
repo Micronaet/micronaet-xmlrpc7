@@ -170,7 +170,7 @@ class MrpProduction(orm.Model):
                     ul.ul_id.code or '',      
                     (product.name or '')[:32],
                     ))
-
+        import pdb; pdb.set_trace()
         _logger.info('Data: %s' % (parameter, ))
         res = self.pool.get('xmlrpc.operation').execute_operation(
             cr, uid, 'lot_create', parameter=parameter, context=context)
