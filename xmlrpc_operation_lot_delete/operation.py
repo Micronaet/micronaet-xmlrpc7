@@ -49,7 +49,7 @@ class XmlrpcOperation(orm.Model):
     # Override function:
     # ------------------
     def execute_operation(self, cr, uid, operation, parameter, context=None):
-        """ Virtual function that will be overrided
+        """ Virtual function that will be overridden
             operation: in this module is 'invoice'
             context: xmlrpc context dict
         """
@@ -108,9 +108,9 @@ class MrpProduction(orm.Model):
         ul_pool = self.pool.get('mrp.production.product.packaging')
         ul_ids = ul_pool.search(cr, uid, [
             # Only not sync:
-            ('production_id.ul_state', '!=', 'deleted'), # draft or account
-            ('production_id.state', 'in', ('close', 'cancel')), # MRP 2be sync
-            ('account_id', '!=', False), # Sync
+            ('production_id.ul_state', '!=', 'deleted'),  # draft or account
+            ('production_id.state', 'in', ('close', 'cancel')),  # MRP 2be sync
+            ('account_id', '!=', False),  # Sync
             ], context=context)
 
         if not ul_ids:
@@ -121,17 +121,17 @@ class MrpProduction(orm.Model):
         # Generate file to be passed:
         # ---------------------------------------------------------------------
         # DB for mark MRP status:
-        mrp_ids = [] # List of touched mrp
-        ul_closed_ids = {} # For check mrp that can be marked as accounting
+        mrp_ids = []  # List of touched mrp
+        ul_closed_ids = {}  # For check mrp that can be marked as accounting
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
             if not ul.ul_id.code:
                 continue # jump line not in account
 
             parameter['input_file_string'] += xml_pool.clean_as_ascii(
                     '%-15s%-15s\r\n' % (
-                    ul.id,
-                    ul.ul_id.code or '',
-                    ))
+                        ul.id,
+                        ul.ul_id.code or '',
+                        ))
 
             # Check data:
             production_id = ul.production_id.id
@@ -166,7 +166,7 @@ class MrpProduction(orm.Model):
                 }, context=context)
 
             if ul_id in ul_closed_ids:
-                del(ul_closed_ids[ul_id]) # remove ul so production ID
+                del(ul_closed_ids[ul_id])  # remove ul so production ID
             else:
                 _logger.error('Mexal return a ID not present: %s' % ul_id)
 
