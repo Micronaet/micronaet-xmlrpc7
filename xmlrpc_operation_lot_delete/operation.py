@@ -31,33 +31,33 @@ from openerp import SUPERUSER_ID
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT, 
-    DEFAULT_SERVER_DATETIME_FORMAT, 
-    DATETIME_FORMATS_MAP, 
+from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+    DEFAULT_SERVER_DATETIME_FORMAT,
+    DATETIME_FORMATS_MAP,
     float_compare)
 
 
 _logger = logging.getLogger(__name__)
 
 class XmlrpcOperation(orm.Model):
-    ''' Model name: XmlrpcOperation
-    '''    
+    """ Model name: XmlrpcOperation
+    """
     _inherit = 'xmlrpc.operation'
 
     # ------------------
     # Override function:
     # ------------------
     def execute_operation(self, cr, uid, operation, parameter, context=None):
-        ''' Virtual function that will be overrided
+        """ Virtual function that will be overrided
             operation: in this module is 'invoice'
             context: xmlrpc context dict
-        '''
+        """
         try:
             if operation != 'lot_delete':
                 # Super call for other cases:
                 return super(XmlrpcOperation, self).execute_operation(
                     cr, uid, operation, parameter, context=context)
-                    
+
             server_pool = self.pool.get('xmlrpc.server')
             xmlrpc_server = server_pool.get_xmlrpc_server(
                 cr, uid, context=context)
@@ -65,24 +65,24 @@ class XmlrpcOperation(orm.Model):
             if res.get('error', False):
                 _logger.error(res['error'])
                 # TODO raise
-            # TODO confirm export!    
-        except:    
+            # TODO confirm export!
+        except:
             _logger.error(sys.exc_info())
             raise osv.except_osv(
                 _('Connect error:'), _('XMLRPC connecting server'))
         return res
-    
+
 class MrpProduction(orm.Model):
-    ''' Add export function to invoice obj
-    '''    
+    """ Add export function to invoice obj
+    """
     _inherit = 'mrp.production'
-  
+
     # -------------------------------------------------------------------------
     # Scheduled
     # -------------------------------------------------------------------------
     def xmlrpc_export_lot_delete(self, cr, uid, context=None):
-        ''' Schedule clean lot production on accounting
-        '''
+        """ Schedule clean lot production on accounting
+        """
         if context is None:
             context = {}
 
@@ -91,9 +91,9 @@ class MrpProduction(orm.Model):
         # Pool used:
         xml_pool = self.pool.get('xmlrpc.server')
         operation_pool = self.pool.get('xmlrpc.operation')
-        
+
         parameter = {}
-        
+
         # ---------------------------------------------------------------------
         # delete parameters for XMLRPC call:
         # ---------------------------------------------------------------------
@@ -102,7 +102,7 @@ class MrpProduction(orm.Model):
 
         # ---------------------------------------------------------------------
         # Pass all lot created:
-        # ---------------------------------------------------------------------        
+        # ---------------------------------------------------------------------
         ul_pool = self.pool.get('mrp.production.product.packaging')
         ul_ids = ul_pool.search(cr, uid, [
             # Only not sync:
@@ -110,11 +110,11 @@ class MrpProduction(orm.Model):
             ('production_id.state', 'in', ('close', 'cancel')), # MRP 2be sync
             ('account_id', '!=', False), # Sync
             ], context=context)
-            
+
         if not ul_ids:
             _logger.error('Nothing to sync!')
             return False
-            
+
         # ---------------------------------------------------------------------
         # Generate file to be passed:
         # ---------------------------------------------------------------------
@@ -124,7 +124,7 @@ class MrpProduction(orm.Model):
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
             if not ul.ul_id.code:
                 continue # jump line not in account
-            
+
             parameter['input_file_string'] += xml_pool.clean_as_ascii(
                     '%-15s%-15s\r\n' % (
                     ul.id,
@@ -139,9 +139,9 @@ class MrpProduction(orm.Model):
         _logger.info('Data: %s' % (parameter, ))
         res = operation_pool.execute_operation(
             cr, uid, 'lot_delete', parameter=parameter, context=context)
-        
+
         # ---------------------------------------------------------------------
-        # Parse result:    
+        # Parse result:
         # ---------------------------------------------------------------------
         error = res.get('error', False)
         if error:
@@ -162,12 +162,12 @@ class MrpProduction(orm.Model):
             ul_pool.write(cr, uid, ul_id, {
                 'deleted': True,
                 }, context=context)
-                
+
             if ul_id in ul_closed_ids:
                 del(ul_closed_ids[ul_id]) # remove ul so production ID
             else:
                 _logger.error('Mexal return a ID not present: %s' % ul_id)
-            
+
         # ---------------------------------------------------------------------
         # Close MRP all lot sync:
         # ---------------------------------------------------------------------
