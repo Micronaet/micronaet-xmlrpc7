@@ -39,6 +39,7 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+
 class XmlrpcOperation(orm.Model):
     """ Model name: XmlrpcOperation
     """
@@ -71,6 +72,7 @@ class XmlrpcOperation(orm.Model):
             raise osv.except_osv(
                 _('Connect error:'), _('XMLRPC connecting server'))
         return res
+
 
 class MrpProduction(orm.Model):
     """ Add export function to invoice obj
@@ -179,4 +181,3 @@ class MrpProduction(orm.Model):
                     }, context=context)
         _logger.info('End clean lot deleted XMLRPC sync')
         return True
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
