@@ -93,7 +93,6 @@ class MrpProduction(orm.Model):
         # Pool used:
         xml_pool = self.pool.get('xmlrpc.server')
         operation_pool = self.pool.get('xmlrpc.operation')
-
         parameter = {}
 
         # ---------------------------------------------------------------------
@@ -106,9 +105,11 @@ class MrpProduction(orm.Model):
         # Pass all lot created:
         # ---------------------------------------------------------------------
         ul_pool = self.pool.get('mrp.production.product.packaging')
+        import pdb; pdb.set_trace()
         ul_ids = ul_pool.search(cr, uid, [
             # Only not sync:
-            ('production_id.ul_state', '!=', 'deleted'),  # draft or account
+            # ('production_id.ul_state', '!=', 'deleted'),  # draft or account
+            ('deleted', '=', False),  # draft or account
             ('production_id.state', 'in', ('close', 'cancel')),  # MRP 2be sync
             ('account_id', '!=', False),  # Sync
             ], context=context)
@@ -125,7 +126,7 @@ class MrpProduction(orm.Model):
         ul_closed_ids = {}  # For check mrp that can be marked as accounting
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
             if not ul.ul_id.code:
-                continue # jump line not in account
+                continue  # jump line not in account
 
             parameter['input_file_string'] += xml_pool.clean_as_ascii(
                     '%-15s%-15s\r\n' % (
