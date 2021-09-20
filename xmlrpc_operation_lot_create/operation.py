@@ -31,33 +31,34 @@ from openerp import SUPERUSER_ID
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT, 
-    DEFAULT_SERVER_DATETIME_FORMAT, 
-    DATETIME_FORMATS_MAP, 
+from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+    DEFAULT_SERVER_DATETIME_FORMAT,
+    DATETIME_FORMATS_MAP,
     float_compare)
 
 
 _logger = logging.getLogger(__name__)
 
+
 class XmlrpcOperation(orm.Model):
-    ''' Model name: XmlrpcOperation
-    '''    
+    """ Model name: XmlrpcOperation
+    """
     _inherit = 'xmlrpc.operation'
 
     # ------------------
     # Override function:
     # ------------------
     def execute_operation(self, cr, uid, operation, parameter, context=None):
-        ''' Virtual function that will be overrided
+        """ Virtual function that will be overrided
             operation: in this module is 'invoice'
             context: xmlrpc context dict
-        '''
+        """
         try:
             if operation != 'lot_create':
                 # Super call for other cases:
                 return super(XmlrpcOperation, self).execute_operation(
                     cr, uid, operation, parameter, context=context)
-                    
+
             server_pool = self.pool.get('xmlrpc.server')
             xmlrpc_server = server_pool.get_xmlrpc_server(
                 cr, uid, context=context)
@@ -65,37 +66,37 @@ class XmlrpcOperation(orm.Model):
             if res.get('error', False):
                 _logger.error(res['error'])
                 # TODO raise
-            # TODO confirm export!    
-        except:    
+            # TODO confirm export!
+        except:
             _logger.error(sys.exc_info())
             raise osv.except_osv(
                 _('Connect error:'), _('XMLRPC connecting server'))
         return res
-    
+
+
 class MrpProduction(orm.Model):
-    ''' Add export function to invoice obj
-    '''    
+    """ Add export function to invoice obj
+    """
     _inherit = 'mrp.production'
-  
+
     # -------------------------------------------------------------------------
     # Scheduled
     # -------------------------------------------------------------------------
     def xmlrpc_export_lot_create(self, cr, uid, from_date, context=None):
-        ''' Schedule update of production on accounting
-        '''
+        """ Schedule update of production on accounting
+        """
         # ---------------------------------------------------------------------
         # Utility:
         # ---------------------------------------------------------------------
         def clean_mrp(name):
-            '''
-            '''
-            name = name.split('/')[-1]
-            #name = name[2:]
-            return name
+            """
+            """
+            name = name.split('/')[-1]  # name = name[2:]
+            return '%06d' % int(name)
 
         def set_mrp_as_accounting(self, cr, uid, ids, context=context):
-            ''' Close production with all package sync
-            '''    
+            """ Close production with all package sync
+            """
             # Reload MRP for lot change account_id:
             for mrp in self.browse(cr, uid, ids, context=context):
                 update = True
@@ -107,14 +108,14 @@ class MrpProduction(orm.Model):
                     self.write(cr, uid, mrp.id, {
                         'ul_state': 'account',
                         }, context=context)
-            return True            
+            return True
 
         if context is None:
             context = {}
 
         _logger.info('Start XMLRPC sync for lot creation')
         parameter = {}
-        
+
         # ---------------------------------------------------------------------
         # Create parameters for XMLRPC call:
         # ---------------------------------------------------------------------
@@ -124,21 +125,21 @@ class MrpProduction(orm.Model):
         # Get new production to be sync:
         production_ids = self.search(cr, uid, [
             # From date filter for not all old importation (limit):
-            ('create_date', '>=', from_date),            
+            ('create_date', '>=', from_date),
             # New production:
             ('ul_state', '=', 'draft'),
             # Draft or production (other lot are created)
             ('state', 'in', ('draft', 'production')), # closed already in acc.
             ], context=context)
-            
+
         # ---------------------------------------------------------------------
         # 1. Launch for every production the regenerate button
         # ---------------------------------------------------------------------
         _logger.info('%s production to update UL' % len(production_ids))
         for item_id in production_ids:
-            self.load_package_for_production(cr, uid, [item_id], 
+            self.load_package_for_production(cr, uid, [item_id],
                 context=context)
-            
+
         # ---------------------------------------------------------------------
         # 2. Write lines not present
         # ---------------------------------------------------------------------
@@ -146,19 +147,19 @@ class MrpProduction(orm.Model):
         ul_ids = ul_pool.search(cr, uid, [
             # Only not sync:
             ('production_id', 'in', production_ids), # Only selected production
-            #('production_id.ul_state', '=', 'draft'), # MRP to be sync
+            # ('production_id.ul_state', '=', 'draft'), # MRP to be sync
             ('account_id', '=', False), # Not sync
             ], context=context)
-        
+
         # ---------------------------------------------------------------------
         # Generate file to be passed:
         # ---------------------------------------------------------------------
         if not ul_ids:
-            set_mrp_as_accounting(self, cr, uid, production_ids, 
-                context=context)            
+            set_mrp_as_accounting(self, cr, uid, production_ids,
+                context=context)
             _logger.warning('No UL to sync (set account MRP for last sync)')
             return False
-            
+
         for ul in ul_pool.browse(cr, uid, ul_ids, context=context):
             product = ul.production_id.bom_id.product_id
             parameter['input_file_string'] += self.pool.get(
@@ -167,16 +168,16 @@ class MrpProduction(orm.Model):
                     ul.id,
                     clean_mrp(ul.production_id.name),
                     product.default_code or '',
-                    ul.ul_id.code or '',      
+                    ul.ul_id.code or '',
                     (product.name or '')[:32],
                     ))
 
         _logger.info('Data: %s' % (parameter, ))
         res = self.pool.get('xmlrpc.operation').execute_operation(
             cr, uid, 'lot_create', parameter=parameter, context=context)
-        
+
         # ---------------------------------------------------------------------
-        # Parse result:    
+        # Parse result:
         # ---------------------------------------------------------------------
         error = res.get('error', '')
         if error:
@@ -189,7 +190,7 @@ class MrpProduction(orm.Model):
             return False
 
         error_file = u''
-        for line in result_string_file.split('\n'):            
+        for line in result_string_file.split('\n'):
             row = line.strip()
             if not row:
                 continue # jump empty row
@@ -197,19 +198,18 @@ class MrpProduction(orm.Model):
             if len(row) != 2:
                 error_file += u'%s\n' % row
                 continue
-                
+
             item_id = int(row[0].strip())
             account_id = row[1].strip()
             ul_pool.write(cr, uid, [item_id], {
                 'account_id': account_id,
                 }, context=context)
-        if error_file:    
+        if error_file:
             _logger.error('Error in file:\n %s' % error_file)
-        
+
         # ---------------------------------------------------------------------
         # Close MRP all lot sync:
         # ---------------------------------------------------------------------
         set_mrp_as_accounting(self, cr, uid, production_ids, context=context)
         _logger.info('End correct importation XMLRPC sync lot creation')
         return True
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
