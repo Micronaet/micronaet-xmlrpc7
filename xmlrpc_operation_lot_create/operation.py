@@ -91,8 +91,12 @@ class MrpProduction(orm.Model):
         def clean_mrp(name):
             """
             """
-            name = name.split('/')[-1]  # name = name[2:]
-            return '%06d' % int(name)
+            # name = name.split('/')[-1]  # name = name[2:]
+            name = '%s%s' % (
+                name[:2],
+                name[-5:],
+            )
+            return name  # '%06d' % int(name)
 
         def set_mrp_as_accounting(self, cr, uid, ids, context=context):
             """ Close production with all package sync
@@ -103,8 +107,8 @@ class MrpProduction(orm.Model):
                 for pack in mrp.product_packaging_ids:
                     if not pack.account_id:
                         update = False
-                        break # one False no state passing
-                if update: # MRP has all pack lot created and sync:
+                        break  # one False no state passing
+                if update:  # MRP has all pack lot created and sync:
                     self.write(cr, uid, mrp.id, {
                         'ul_state': 'account',
                         }, context=context)
@@ -129,7 +133,7 @@ class MrpProduction(orm.Model):
             # New production:
             ('ul_state', '=', 'draft'),
             # Draft or production (other lot are created)
-            ('state', 'in', ('draft', 'production')), # closed already in acc.
+            ('state', 'in', ('draft', 'production')),  # closed already in acc.
             ], context=context)
 
         # ---------------------------------------------------------------------
@@ -146,17 +150,17 @@ class MrpProduction(orm.Model):
         ul_pool = self.pool.get('mrp.production.product.packaging')
         ul_ids = ul_pool.search(cr, uid, [
             # Only not sync:
-            ('production_id', 'in', production_ids), # Only selected production
-            # ('production_id.ul_state', '=', 'draft'), # MRP to be sync
-            ('account_id', '=', False), # Not sync
+            ('production_id', 'in', production_ids),  # Only selected MRP
+            # ('production_id.ul_state', '=', 'draft'),  # MRP to be sync
+            ('account_id', '=', False),  # Not sync
             ], context=context)
 
         # ---------------------------------------------------------------------
         # Generate file to be passed:
         # ---------------------------------------------------------------------
         if not ul_ids:
-            set_mrp_as_accounting(self, cr, uid, production_ids,
-                context=context)
+            set_mrp_as_accounting(
+                self, cr, uid, production_ids, context=context)
             _logger.warning('No UL to sync (set account MRP for last sync)')
             return False
 
@@ -165,12 +169,12 @@ class MrpProduction(orm.Model):
             parameter['input_file_string'] += self.pool.get(
                 'xmlrpc.server').clean_as_ascii(
                     '%-15s%-15s%-15s%-15s%-32s\r\n' % (
-                    ul.id,
-                    clean_mrp(ul.production_id.name),
-                    product.default_code or '',
-                    ul.ul_id.code or '',
-                    (product.name or '')[:32],
-                    ))
+                        ul.id,
+                        clean_mrp(ul.production_id.name),
+                        product.default_code or '',
+                        ul.ul_id.code or '',
+                        (product.name or '')[:32],
+                        ))
 
         _logger.info('Data: %s' % (parameter, ))
         res = self.pool.get('xmlrpc.operation').execute_operation(
