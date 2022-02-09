@@ -31,9 +31,9 @@ from openerp import SUPERUSER_ID
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT, 
-    DEFAULT_SERVER_DATETIME_FORMAT, 
-    DATETIME_FORMATS_MAP, 
+from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+    DEFAULT_SERVER_DATETIME_FORMAT,
+    DATETIME_FORMATS_MAP,
     float_compare)
 
 
@@ -42,10 +42,10 @@ _logger = logging.getLogger(__name__)
 # TODO log operations!!
 class XmlrpcServer(orm.Model):
     ''' Model name: XmlrpcServer
-    '''    
+    '''
     _name = 'xmlrpc.server'
     _description = 'XMLRPC Server'
-    
+
     def clean_as_ascii(self, value):
         ''' Procedure for clean not ascii char in string
         '''
@@ -54,18 +54,18 @@ class XmlrpcServer(orm.Model):
             if ord(c) < 127:
                 res += c
             else:
-                res += '#'           
+                res += '#'
         return res
-        
+
     def get_xmlrpc_server(self, cr, uid, context=None):
         ''' Connect with server and return obj
         '''
         server_ids = self.search(cr, uid, [], context=context)
         if not server_ids:
             return False
-        
+
         server_proxy = self.browse(cr, uid, server_ids, context=context)[0]
-        
+
         try:
             xmlrpc_server = 'http://%s:%s' % (
                 server_proxy.host, server_proxy.port)
@@ -73,25 +73,25 @@ class XmlrpcServer(orm.Model):
             return False
         return xmlrpclib.ServerProxy(xmlrpc_server)
 
-    def get_default_company(self, cr, uid, context=None): 
+    def get_default_company(self, cr, uid, context=None):
         ''' If only one use that
         '''
         try:
             company_ids = self.pool.get('res.company').search(
-                cr, uid, [], context=context)            
+                cr, uid, [], context=context)
             if len(company_ids) == 1:
                 return company_ids[0]
-        except:    
+        except:
             pass
-        return False    
-        
+        return False
+
     _columns = {
         'name': fields.char('Operation', size=64, required=True),
         'host': fields.char('Input filename', size=100, required=True),
         'port': fields.integer('Port', required=True),
         # TODO authentication?
 
-        'company_id': fields.many2one('res.company', 'Company', required=True),         
+        'company_id': fields.many2one('res.company', 'Company', required=True),
         'note': fields.text('Note'),
         }
 
@@ -100,24 +100,24 @@ class XmlrpcServer(orm.Model):
         'port': lambda *x: 8069,
         'company_id': lambda s, cr, uid, ctx: s.get_default_company(
             cr, uid, ctx),
-        }    
+        }
 
 class XmlrpcOperation(orm.Model):
     ''' Model name: XmlrpcOperation
-    '''    
+    '''
     _name = 'xmlrpc.operation'
     _description = 'XMLRPC Operation'
-    
+
     def execute_operation(self, cr, uid, operation, parameter, context=None):
         ''' Virtual function that will be overrided
         '''
         return True
-        
+
     _columns = {
         'demo': fields.boolean('Demo mode'),
         'name': fields.char('Operation', size=64, required=True),
-        #'operation': fields.char('ID Operation', size=64, required=True),
-        'shell_command': fields.char('Shell command', size=120),
+        # 'operation': fields.char('ID Operation', size=64, required=True),
+        'shell_command': fields.char('Shell command', size=220),
         'input_filename': fields.char('Input filename', size=100),
         'input_path': fields.char('Input path', size=180),
         'result_filename': fields.char('Result filename', size=100),
@@ -126,6 +126,6 @@ class XmlrpcOperation(orm.Model):
         # Log folder path:
         'input_log_path': fields.char('Input log path', size=180),
         'result_log_path': fields.char('Input log path', size=180),
-        }        
-        
+        }
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

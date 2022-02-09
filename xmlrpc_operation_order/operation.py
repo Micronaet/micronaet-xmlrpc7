@@ -181,4 +181,4 @@ class SaleOrder(orm.Model):
     #_columns = {
     #    'xmlrpc_sync': fields.boolean('XMLRPC syncronized'),        
     #    }
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+
