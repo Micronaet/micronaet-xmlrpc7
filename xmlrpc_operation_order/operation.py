@@ -120,9 +120,9 @@ class SaleOrder(orm.Model):
                             '1',  # TODO order.causal, # Causal
                             format_date(order.date_order),  # Order date
                             order.partner_id.sql_customer_code or '', # Cust. code
-                            format_date(order.date_deadline), # Deadline date
+                            format_date(order.date_deadline),  # Deadline date
                             '',  # todo Agent code
-                            order.note[:16] if order.note else '', # Note
+                            order.note[:16] if order.note else '',  # Note
                             '1',  # todo stock number
                             '7',  # order.pricelist_id.currency_id.name if\
                             #    order.pricelist_id else 'EUR', # Currency
