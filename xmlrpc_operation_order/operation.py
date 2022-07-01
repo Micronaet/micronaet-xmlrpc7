@@ -143,11 +143,11 @@ class SaleOrder(orm.Model):
                             #                    Footer:
                             # -------------------------------------------------
                             order.address_id.sql_destination_code \
-                                if order.address_id else '', # Destination
+                            if order.address_id else '',  # Destination
                             order.carriage_condition_id.account_code or '', # Port
-                            'M',  # TODO transport
-                            '1',  # TODO total parcels
-                            '10',  # TODO weight total
+                            'M',  # todo transport
+                            '1',  # todo total parcels
+                            '10',  # todo weight total
                             '', # order.goods_description_id.import_id or '', # external layout
                             '', # order.payment_term_id.account_ref or '', # payment
                             order.carrier_id.partner_id.sql_supplier.code if \
