@@ -39,6 +39,7 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
+
 class XmlrpcOperation(orm.Model):
     """ Model name: XmlrpcOperation
     """
@@ -48,7 +49,7 @@ class XmlrpcOperation(orm.Model):
     # Override function:
     # ------------------
     def execute_operation(self, cr, uid, operation, parameter, context=None):
-        """ Virtual function that will be overrided
+        """ Virtual function that will be overridden
             operation: in this module is 'order'
             context: xmlrpc context dict
         """
@@ -72,6 +73,7 @@ class XmlrpcOperation(orm.Model):
                 _('Connect error:'), _('XMLRPC connecting server'))
         return res
 
+
 class SaleOrder(orm.Model):
     """ Add export function to order obj
     """
@@ -92,12 +94,12 @@ class SaleOrder(orm.Model):
                     )
             return ''
 
-        assert len(ids) == 1, 'No multi export for now' # TODO remove!!!
+        assert len(ids) == 1, 'No multi export for now'  # todo remove!!!
 
         # TODO use with validate trigger for get the number
         parameter = {}
 
-        mask = '%s%s%s%s' % ( # 3 block for readability:
+        mask = '%s%s%s%s' % (  # 3 block for readability:
             '%-6s%-2s%-8s%-9s%-8s%-9s%-16s%-1s%-3s',  # header
             '%-1s%-8s%-60s%-2s%15s%15s%-20s%-5s%-8s%-5s',  # row
             '%-9s%-5s%-1s%-3s%-15s%-4s%-4s%-9s%1s',  # foot
@@ -114,14 +116,14 @@ class SaleOrder(orm.Model):
                             # -------------------------------------------------
                             #                    Header:
                             # -------------------------------------------------
-                            order.name.split('/')[0][:6], # order number
+                            order.name.split('/')[0][:6],  # order number
                             '1',  # TODO order.causal, # Causal
-                            format_date(order.date_order), # Order date
+                            format_date(order.date_order),  # Order date
                             order.partner_id.sql_customer_code or '', # Cust. code
                             format_date(order.date_deadline), # Deadline date
-                            '', # TODO Agent code
+                            '',  # todo Agent code
                             order.note[:16] if order.note else '', # Note
-                            '1',  # TODO stock number
+                            '1',  # todo stock number
                             '7',  # order.pricelist_id.currency_id.name if\
                             #    order.pricelist_id else 'EUR', # Currency
 
@@ -129,9 +131,9 @@ class SaleOrder(orm.Model):
                             #                    Lines:
                             # -------------------------------------------------
                             'R', # Row type
-                            (line.product_id.default_code or '')[:8], # Code
+                            (line.product_id.default_code or '')[:8],  # Code
                             ((line.name.split('] ')[-1]).split('\n')[0])[:60], # Description
-                            '', # TODO line.product_id.uom_id.account_ref or '' # UM
+                            '', # todo line.product_id.uom_id.account_ref or '' # UM
                             ('%15.6f' % line.product_uom_qty), # Q.ty
                             ('%15.5f' % line.price_unit), # Price
                             line.discount or '', # Discount
@@ -161,7 +163,7 @@ class SaleOrder(orm.Model):
         result_string_file = res.get('result_string_file', False)
         if result_string_file:
             if result_string_file.startswith('OK'):
-                #self.write(cr, uid, ids, {
+                # self.write(cr, uid, ids, {
                 #    'xmlrpc_sync': True,
                 #    }, context=context)
                 return True
