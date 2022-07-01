@@ -39,16 +39,17 @@ from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
 
 _logger = logging.getLogger(__name__)
 
-# TODO log operations!!
+
+# todo log operations!!
 class XmlrpcServer(orm.Model):
-    ''' Model name: XmlrpcServer
-    '''
+    """ Model name: XmlrpcServer
+    """
     _name = 'xmlrpc.server'
     _description = 'XMLRPC Server'
 
     def clean_as_ascii(self, value):
-        ''' Procedure for clean not ascii char in string
-        '''
+        """ Procedure for clean not ascii char in string
+        """
         res = ''
         for c in value:
             if ord(c) < 127:
@@ -58,8 +59,8 @@ class XmlrpcServer(orm.Model):
         return res
 
     def get_xmlrpc_server(self, cr, uid, context=None):
-        ''' Connect with server and return obj
-        '''
+        """ Connect with server and return obj
+        """
         server_ids = self.search(cr, uid, [], context=context)
         if not server_ids:
             return False
@@ -74,8 +75,8 @@ class XmlrpcServer(orm.Model):
         return xmlrpclib.ServerProxy(xmlrpc_server)
 
     def get_default_company(self, cr, uid, context=None):
-        ''' If only one use that
-        '''
+        """ If only one use that
+        """
         try:
             company_ids = self.pool.get('res.company').search(
                 cr, uid, [], context=context)
@@ -89,7 +90,7 @@ class XmlrpcServer(orm.Model):
         'name': fields.char('Operation', size=64, required=True),
         'host': fields.char('Input filename', size=100, required=True),
         'port': fields.integer('Port', required=True),
-        # TODO authentication?
+        # todo authentication?
 
         'company_id': fields.many2one('res.company', 'Company', required=True),
         'note': fields.text('Note'),
@@ -102,15 +103,16 @@ class XmlrpcServer(orm.Model):
             cr, uid, ctx),
         }
 
+
 class XmlrpcOperation(orm.Model):
-    ''' Model name: XmlrpcOperation
-    '''
+    """ Model name: XmlrpcOperation
+    """
     _name = 'xmlrpc.operation'
     _description = 'XMLRPC Operation'
 
     def execute_operation(self, cr, uid, operation, parameter, context=None):
-        ''' Virtual function that will be overrided
-        '''
+        """ Virtual function that will be overrided
+        """
         return True
 
     _columns = {
@@ -127,5 +129,3 @@ class XmlrpcOperation(orm.Model):
         'input_log_path': fields.char('Input log path', size=180),
         'result_log_path': fields.char('Input log path', size=180),
         }
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
