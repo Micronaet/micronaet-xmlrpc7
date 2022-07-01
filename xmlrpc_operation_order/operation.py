@@ -31,33 +31,33 @@ from openerp import SUPERUSER_ID
 from openerp import tools
 from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
-from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT, 
-    DEFAULT_SERVER_DATETIME_FORMAT, 
-    DATETIME_FORMATS_MAP, 
+from openerp.tools import (DEFAULT_SERVER_DATE_FORMAT,
+    DEFAULT_SERVER_DATETIME_FORMAT,
+    DATETIME_FORMATS_MAP,
     float_compare)
 
 
 _logger = logging.getLogger(__name__)
 
 class XmlrpcOperation(orm.Model):
-    ''' Model name: XmlrpcOperation
-    '''    
+    """ Model name: XmlrpcOperation
+    """
     _inherit = 'xmlrpc.operation'
 
     # ------------------
     # Override function:
     # ------------------
     def execute_operation(self, cr, uid, operation, parameter, context=None):
-        ''' Virtual function that will be overrided
+        """ Virtual function that will be overrided
             operation: in this module is 'order'
             context: xmlrpc context dict
-        '''
+        """
         try:
             if operation != 'order':
                 # Super call for other cases:
                 return super(XmlrpcOperation, self).execute_operation(
                     cr, uid, operation, parameter, context=context)
-                    
+
             server_pool = self.pool.get('xmlrpc.server')
             xmlrpc_server = server_pool.get_xmlrpc_server(
                 cr, uid, context=context)
@@ -65,43 +65,43 @@ class XmlrpcOperation(orm.Model):
             if res.get('error', False):
                 _logger.error(res['error'])
                 # TODO raise
-            # TODO confirm export!    
-        except:    
+            # TODO confirm export!
+        except:
             _logger.error(sys.exc_info())
             raise osv.except_osv(
                 _('Connect error:'), _('XMLRPC connecting server'))
         return res
-    
+
 class SaleOrder(orm.Model):
-    ''' Add export function to order obj
-    '''    
+    """ Add export function to order obj
+    """
     _inherit = 'sale.order'
-  
+
     def xmlrpc_export_order(self, cr, uid, ids, context=None):
-        ''' Export current order 
+        """ Export current order
             # TODO manage list of order?
-        '''
+        """
         def format_date(value):
-            ''' Set date for accounting program:
-            '''
+            """ Set date for accounting program:
+            """
             if value:
                 return '%s%s%s' % (
-                    value[:4], 
-                    value[5:7], 
-                    value[8:10], 
+                    value[:4],
+                    value[5:7],
+                    value[8:10],
                     )
-            return ''        
-                
+            return ''
+
         assert len(ids) == 1, 'No multi export for now' # TODO remove!!!
 
         # TODO use with validate trigger for get the number
         parameter = {}
-        
-        mask = '%s%s%s%s' % ( #3 block for readability:
-            '%-6s%-2s%-8s%-9s%-8s%-9s%-16s%-1s%-3s', #header
-            '%-1s%-8s%-60s%-2s%15s%15s%-20s%-5s%-8s%-5s', #row
-            '%-9s%-5s%-1s%-3s%-15s%-4s%-4s%-9s%1s', #foot
-            '\r\n', # Win CR
+
+        mask = '%s%s%s%s' % ( # 3 block for readability:
+            '%-6s%-2s%-8s%-9s%-8s%-9s%-16s%-1s%-3s',  # header
+            '%-1s%-8s%-60s%-2s%15s%15s%-20s%-5s%-8s%-5s',  # row
+            '%-9s%-5s%-1s%-3s%-15s%-4s%-4s%-9s%1s',  # foot
+            '\r\n',  # Win CR
             )
 
         parameter['input_file_string'] = ''
@@ -110,21 +110,21 @@ class SaleOrder(orm.Model):
             for line in order.order_line:
                 parameter['input_file_string'] += self.pool.get(
                     'xmlrpc.server').clean_as_ascii(
-                        mask % (                        
+                        mask % (
                             # -------------------------------------------------
                             #                    Header:
                             # -------------------------------------------------
                             order.name.split('/')[0][:6], # order number
-                            '1',# TODO order.causal, # Causal
+                            '1',  # TODO order.causal, # Causal
                             format_date(order.date_order), # Order date
                             order.partner_id.sql_customer_code or '', # Cust. code
                             format_date(order.date_deadline), # Deadline date
                             '', # TODO Agent code
                             order.note[:16] if order.note else '', # Note
-                            '1', # TODO stock number
-                            '7',# order.pricelist_id.currency_id.name if\
+                            '1',  # TODO stock number
+                            '7',  # order.pricelist_id.currency_id.name if\
                             #    order.pricelist_id else 'EUR', # Currency
-                                                        
+
                             # -------------------------------------------------
                             #                    Lines:
                             # -------------------------------------------------
@@ -138,26 +138,26 @@ class SaleOrder(orm.Model):
                             ' 22  ', # TODO vat tax_id # VAT or esention
                             format_date(line.date_deadline), # Deadline date
                             ('%5.2f' % 0.0), # Sale prov.
-                            
+
                             # -------------------------------------------------
                             #                    Footer:
                             # -------------------------------------------------
                             order.address_id.sql_destination_code \
                                 if order.address_id else '', # Destination
                             order.carriage_condition_id.account_code or '', # Port
-                            'M', # TODO transport
-                            '1', # TODO total parcels 
-                            '10', # TODO weight total
-                            '', #order.goods_description_id.import_id or '', # external layout
-                            '', #order.payment_term_id.account_ref or '', # payment
+                            'M',  # TODO transport
+                            '1',  # TODO total parcels
+                            '10',  # TODO weight total
+                            '', # order.goods_description_id.import_id or '', # external layout
+                            '', # order.payment_term_id.account_ref or '', # payment
                             order.carrier_id.partner_id.sql_supplier.code if \
                                 order.carrier_id.partner_id else '',
-                            #order.transportation_reason_id.account_ref or ''
+                            # order.transportation_reason_id.account_ref or ''
                             ))
 
         res = self.pool.get('xmlrpc.operation').execute_operation(
             cr, uid, 'order', parameter=parameter, context=context)
-            
+
         result_string_file = res.get('result_string_file', False)
         if result_string_file:
             if result_string_file.startswith('OK'):
@@ -165,20 +165,20 @@ class SaleOrder(orm.Model):
                 #    'xmlrpc_sync': True,
                 #    }, context=context)
                 return True
-            else:    
+            else:
                 raise osv.except_osv(
-                    _('Sync error:'), 
+                    _('Sync error:'),
                     _('Error: %s') % result_string_file,
                     )
-                
+
         # TODO write better error
         raise osv.except_osv(
-            _('Sync error:'), 
+            _('Sync error:'),
             _('Cannot sync with accounting! (return esit not present'),
             )
         return False
-    
+
     #_columns = {
-    #    'xmlrpc_sync': fields.boolean('XMLRPC syncronized'),        
+    #    'xmlrpc_sync': fields.boolean('XMLRPC syncronized'),
     #    }
 
