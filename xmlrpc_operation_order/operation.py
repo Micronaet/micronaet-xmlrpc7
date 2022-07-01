@@ -65,8 +65,8 @@ class XmlrpcOperation(orm.Model):
             res = xmlrpc_server.execute('order', parameter)
             if res.get('error', False):
                 _logger.error(res['error'])
-                # TODO raise
-            # TODO confirm export!
+                # todo raise
+            # todo confirm export!
         except:
             _logger.error(sys.exc_info())
             raise osv.except_osv(
@@ -96,7 +96,7 @@ class SaleOrder(orm.Model):
 
         assert len(ids) == 1, 'No multi export for now'  # todo remove!!!
 
-        # TODO use with validate trigger for get the number
+        # todo use with validate trigger for get the number
         parameter = {}
 
         mask = '%s%s%s%s' % (  # 3 block for readability:
