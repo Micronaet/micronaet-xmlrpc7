@@ -61,7 +61,7 @@ server.register_introspection_functions()
 #                                 Functions
 # -----------------------------------------------------------------------------
 def execute(operation, parameter=None):
-    ''' Execute method for call function (saved in ODOO)
+    """ Execute method for call function (saved in ODOO)
         operation: name of operation (searched in odoo xmlrpc.operation obj
         parameter: dict with extra parameter
             > input_file_string: text of input file
@@ -69,9 +69,9 @@ def execute(operation, parameter=None):
         @return: dict with parameter:
             error: if there's an error during operation
             result_string_file: output file returned as a string
-    '''
-    print '[INFO] Run operation: %s Parameter list: %s' % (
-        operation, parameter.keys())
+    """
+    print('[INFO] Run operation: %s Parameter list: %s' % (
+        operation, parameter.keys()))
 
     # Setup dict:
     parameter = parameter or {}
@@ -158,7 +158,7 @@ def execute(operation, parameter=None):
         return res
 
     try:
-        os.system(shell_command) # Launch sprix
+        os.system(shell_command)  # Launch sprix
         print('[INFO] Launch command: %s' % shell_command)
     except:
         res['error'] = 'Error launch shell command'
@@ -201,6 +201,7 @@ def execute(operation, parameter=None):
     # -------------------------------------------------------------------------
     print('[INFO] End operation')
     return res
+
 
 # -----------------------------------------------------------------------------
 #                  Register Function in XML-RPC server:
