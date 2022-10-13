@@ -81,7 +81,7 @@ class SaleOrder(orm.Model):
 
     def xmlrpc_export_order(self, cr, uid, ids, context=None):
         """ Export current order
-            # TODO manage list of order?
+            # todo manage list of order?
         """
         def format_date(value):
             """ Set date for accounting program:
@@ -117,7 +117,7 @@ class SaleOrder(orm.Model):
                             #                    Header:
                             # -------------------------------------------------
                             order.name.split('/')[0][:6],  # order number
-                            '1',  # TODO order.causal, # Causal
+                            '1',  # todo order.causal, # Causal
                             format_date(order.date_order),  # Order date
                             order.partner_id.sql_customer_code or '', # Cust. code
                             format_date(order.date_deadline),  # Deadline date
@@ -130,14 +130,14 @@ class SaleOrder(orm.Model):
                             # -------------------------------------------------
                             #                    Lines:
                             # -------------------------------------------------
-                            'R', # Row type
+                            'R',  # Row type
                             (line.product_id.default_code or '')[:8],  # Code
                             ((line.name.split('] ')[-1]).split('\n')[0])[:60], # Description
                             '', # todo line.product_id.uom_id.account_ref or '' # UM
                             ('%15.6f' % line.product_uom_qty), # Q.ty
                             ('%15.5f' % line.price_unit), # Price
                             line.discount or '', # Discount
-                            ' 22  ', # TODO vat tax_id # VAT or esention
+                            ' 22  ',  # todo vat tax_id # VAT or esention
                             format_date(line.date_deadline), # Deadline date
                             ('%5.2f' % 0.0), # Sale prov.
 
@@ -173,14 +173,14 @@ class SaleOrder(orm.Model):
                     _('Error: %s') % result_string_file,
                     )
 
-        # TODO write better error
+        # todo write better error
         raise osv.except_osv(
             _('Sync error:'),
             _('Cannot sync with accounting! (return esit not present'),
             )
         return False
 
-    #_columns = {
+    # _columns = {
     #    'xmlrpc_sync': fields.boolean('XMLRPC syncronized'),
     #    }
 

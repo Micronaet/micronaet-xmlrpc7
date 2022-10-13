@@ -22,7 +22,7 @@ import os
 import sys
 import shutil
 import ConfigParser
-import erppeek # for request VS ODOO
+import erppeek  # for request VS ODOO
 from SimpleXMLRPCServer import SimpleXMLRPCServer, SimpleXMLRPCRequestHandler
 from datetime import datetime
 
@@ -44,11 +44,13 @@ odoo_db = config.get('ODOO', 'db')
 odoo_user = config.get('ODOO', 'user')
 odoo_password = config.get('ODOO', 'password')
 
+
 # -----------------------------------------------------------------------------
 #                         Restrict to a particular path
 # -----------------------------------------------------------------------------
 class RequestHandler(SimpleXMLRPCRequestHandler):
     rpc_paths = ('/RPC2',)
+
 
 # -----------------------------------------------------------------------------
 #                                Create server
@@ -56,6 +58,7 @@ class RequestHandler(SimpleXMLRPCRequestHandler):
 server = SimpleXMLRPCServer(
     (xmlrpc_host, xmlrpc_port), requestHandler=RequestHandler)
 server.register_introspection_functions()
+
 
 # -----------------------------------------------------------------------------
 #                                 Functions
@@ -137,7 +140,7 @@ def execute(operation, parameter=None):
             input_filename = os.path.expanduser(os.path.join(
                 input_path, input_filename))
             input_file = open(input_filename, 'w')
-            input_file.write(input_file_string) # TODO \r problems?!?
+            input_file.write(input_file_string)  # todo \r problems?!?
             input_file.close()
             print('[INFO] Create input file: %s' % input_filename)
 

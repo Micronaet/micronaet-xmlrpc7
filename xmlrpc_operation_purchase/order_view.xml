@@ -8,14 +8,14 @@
             <field name="inherit_id" ref="sale.view_order_form"/>
             <field name="arch" type="xml">
                 <field name="name" position="after">
-                    <button name="xmlrpc_export_order" string="Export in Account" type="object" icon="gtk-refresh" /> <!--attrs="{'invisible':['|',('state','=','draft'),('xmlrpc_sync','=',True)]}"-->
+                    <button name="xmlrpc_export_order" groups="xmlrpc_operation_purchase.sync_admin" string="Export in Account" type="object" icon="gtk-refresh" /> <!--attrs="{'invisible':['|',('state','=','draft'),('xmlrpc_sync','=',True)]}"-->
                     <!--<button name="reset_xmlrpc_export_order" string="Reset sync" type="object" groups="xmlrpc_operation_order.sync_admin"/>
                     <field name="xmlrpc_sync" invisible="1"/>
                 <xpath expr="/form/sheet" position="before">
                     <div style="background-color:green;text-align:center;font-weight:bold;color:white;">
                         <separator string="Account Sync" attrs="{'invisible': [('xmlrpc_sync', '=', False)]}" />
                     </div>
-                </xpath>                
+                </xpath>
                     -->
                 </field>
             </field>
@@ -26,7 +26,7 @@
             <field name="inherit_id" ref="sale.view_quotation_tree"/>
             <field name="arch" type="xml">
                 <field name="state" position="after">
-                    <button name="xmlrpc_export_order" string="Export in Account" type="object" icon="gtk-refresh" /> <!--attrs="{'invisible':['|',('state','=','draft'),('xmlrpc_sync','=',True)]}"-->
+                    <button name="xmlrpc_export_order" groups="xmlrpc_operation_purchase.sync_admin" string="Export in Account" type="object" icon="gtk-refresh" /> <!--attrs="{'invisible':['|',('state','=','draft'),('xmlrpc_sync','=',True)]}"-->
                 </field>
             </field>
         </record>
